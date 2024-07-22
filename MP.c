@@ -1,7 +1,10 @@
-/* We gotta fix the code for more showtimes in files
+/*
 
-  print tickets - juan
-  save and exit final print - juan
+
+We gotta fix the code for more showtimes in files - WIP
+FIX 2D
+  print tickets - DONE
+  save and exit final print -DONE
   */
 
 #include <stdio.h>
