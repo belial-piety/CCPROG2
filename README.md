@@ -1,3 +1,4 @@
 # CCPROG2
 
-My CCPROG2 Notes, coding allat
+MP, INCASE REPLIT SLOW ASF
+
