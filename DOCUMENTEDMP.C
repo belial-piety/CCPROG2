@@ -293,10 +293,9 @@ void SortByTime(SeatingData s[], int size) { // ind[0] = 1
 /* PrintSearch - Prints out the search results
 @param s[] - Seating Data Struct 
 @param size = Size of the array index
-@param Time = @ELI is this unused?
 @returns void
 */
-void PrintSearch(SeatingData s[], int size, String10 Time) {
+void PrintSearch(SeatingData s[], int size) {
   int i;
 
   for (i = 0; i < size; i++) {
@@ -388,7 +387,7 @@ void SearchMovie(SeatingData s[][6], String50 MovieName) {
       }
     }
     SortByTime(tempSched, schedCtr);
-    PrintSearch(tempSched, schedCtr, Time);
+    PrintSearch(tempSched, schedCtr);
     break;
   default:
     printf("Invalid selection!\n");
@@ -414,7 +413,7 @@ void SelectionSort(MovieData Movies[], int size) {
 */
 
 /* showSeating - Displays Seating GUI and if seat is taken logic
-@param *c = @eli fill
+@param *c = Seating Data Structure, Shows available seat and taken seat 
 @returns void
 Pre-condition:N/A.
 */
@@ -462,12 +461,11 @@ void showSeating(SeatingData *c) {
 }
 
 /* initSeatArray - Initializes Seat Array
-@param *Showings = @eli fill
+@param *Showings = Contains Seat Arrays
 @returns void
 Pre-condition:N/A.
 */
-void initSeatArray(
-    SeatingData *Showings) { /// INITIALIZES EACH SHOWING'S SEATING ARRAY
+void initSeatArray(SeatingData *Showings) { /// INITIALIZES EACH SHOWING'S SEATING ARRAY
   int i, j;
 
   for (i = 0; i < 5; i++) {
@@ -477,18 +475,16 @@ void initSeatArray(
                  // seat number
     }
   }
-  Showings->Occupancy =
-      0; // initializes current showing occupancy to 0. should have a max of 50.
+  Showings->Occupancy = 0; // initializes current showing occupancy to 0. should have a max of 50.
 }
 
 /* initSeatingData - Initializes all showings in the seatingdata 2d array.
-@param Showings[][6] - @eli fill
-@param Movies[] - Movie Data
+@param Showings[][6] - Seating Data Structure. 
+@param Movies[] - Movie Data Structure
 @returns void
 Pre-condition:N/A.
 */
-void initSeatingData(SeatingData Showings[][6],
-                     MovieData Movies[]) { /// INITIALIZES ALL SHOWINGS IN THE
+void initSeatingData(SeatingData Showings[][6],  MovieData Movies[]) { /// INITIALIZES ALL SHOWINGS IN THE
                                            /// SEATINGDATA 2D ARRAY
 
   int i, j;
@@ -627,8 +623,8 @@ void SelectCinemaSeat(MovieData Movies[], SeatingData Showings[][6],
 }
 
 /*SeatSelect - Customers pick their seat here
-@param *c = @eli fill
-@param *t = @eli fill
+@param *c = Seating Data Structure, is required for Customer Cart *t
+@param *t = Customer Cart structure, contains tickets etc.
 @returns void
 Pre-condition:N/A.
 */
@@ -779,9 +775,9 @@ void PrintCart(CustomerCart *Cart, SeatingData s[][6]) {
 }
 
 /*takenSeats - Checks if seats are taken
-@param taken[] = @eli fill
+@param taken[] =  Array to store identifiers of taken seats (ex: A1)
 @param s = Seating Data struct to access seat array
-@returns void
+@returns nSeat
 Pre-condition:N/A.
 */
 int takenSeats(SeatingData s, String3 taken[]) {
@@ -813,7 +809,7 @@ int takenSeats(SeatingData s, String3 taken[]) {
 }
 
 /*resetSeats - resets the seats(called when change schedule)
-@param taken = @eli fill
+@param taken = Represents array of seat identifier to get cleared
 @param size = size of array
 @returns void
 Pre-condition:N/A.
