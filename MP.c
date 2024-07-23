@@ -1,10 +1,7 @@
-/*
+/* We gotta fix the code for more showtimes in files
 
-
-We gotta fix the code for more showtimes in files - WIP
-FIX 2D
-  print tickets - DONE
-  save and exit final print -DONE
+  print tickets - juan
+  save and exit final print - juan
   */
 
 #include <stdio.h>
@@ -17,7 +14,6 @@ typedef char String10[11];
 typedef char String3[4];
 typedef char String1000[1001];
 typedef char showtime[8];
-
 
 typedef struct {
   int CinemaNumber;
@@ -37,44 +33,51 @@ typedef struct {
 } SeatingData;
 
 typedef struct {
- int CinemaNumber;
- String50 MovieTitle;
- showtime Timeslot;
- String3 SeatNum;
+  int CinemaNumber;
+  String50 MovieTitle;
+  showtime Timeslot;
+  String3 SeatNum;
 } TicketInfo;
 
 typedef struct {
   int ticketQuantity;
-  TicketInfo cart[50];
+  TicketInfo cart[144];
 } CustomerCart;
 
 // Updated function prototypes
 void preloadmovie(MovieData preload[]);
-void SearchMovie(SeatingData s[][5], String50 MovieName);
+void SearchMovie(SeatingData s[][6], String50 MovieName);
 void ViewSchedule(MovieData ScheduleView[]);
 /// SEATING FUNCTION PROTOTYPES
 void showSeating(SeatingData *c);
 int vSeat(char r, int n);
 void SelectionSort(MovieData Movies[], int size);
-void SelectCinemaSeat(MovieData Movies[], SeatingData Showings[][5], CustomerCart *Cart);
+void SelectCinemaSeat(MovieData Movies[], SeatingData Showings[][6],
+                      CustomerCart *Cart);
 void SeatSelect(SeatingData *c, CustomerCart *t);
-void PrintCart(CustomerCart *Cart, SeatingData s[][5]);
-void SaveAndExit(MovieData preload[], SeatingData s[][5]);
+void PrintCart(CustomerCart *Cart, SeatingData s[][6]);
+void SaveAndExit(MovieData preload[], SeatingData s[][6]);
 
 // LOAD NEW SCHEDULE FUNCTION PROTOTYPE
-void loadschedule(SeatingData s[][5], MovieData Update[]);
+void loadschedule(SeatingData s[][6], MovieData Update[]);
 
 /// INITIALIZATION FUNCTION PROTOTYPES
-void initSeatingData(SeatingData Showings[][5], MovieData Movies[]);
+void initSeatingData(SeatingData Showings[][6], MovieData Movies[]);
 void initCustomerCart(CustomerCart *myCart);
 
 int main() {
   printf("Welcome to Rain's Theatre!\n\n");
-  int decider, exitflag = 1;
+  int decider = -1, exitflag = 1;
+
+  int i;
+  char d;
+  char dChar[6] = {'1', '2', '3', '4', '5', '6'};
+  int dInt[6] = {1, 2, 3, 4, 5, 6};
+
   String50 SearchMov;
 
   MovieData preload[7];
-  SeatingData Seats[6][5];
+  SeatingData Seats[6][6];
   CustomerCart myCart;
 
   preloadmovie(preload);
@@ -90,7 +93,10 @@ int main() {
     printf("[5.]Load Schedule\n");
     printf("[6.] Save and Exit\n");
     printf("< ");
-    scanf("%d", &decider);
+    scanf(" %s", &d);
+    decider = -1;
+
+    for(i = 0; i < 6; i++){if(d == dChar[i]){decider = dInt[i];}}
 
     switch (decider) {
     case 1:
@@ -107,24 +113,31 @@ int main() {
       break;
     case 4:
       // PrintTicket(MovieData preload[], int size);
-      PrintCart(&myCart, Seats);///FOR PROTOTYPING PURPOSES ONLY, SHOULD BE REMOVED
+      PrintCart(&myCart,
+                Seats); /// FOR PROTOTYPING PURPOSES ONLY, SHOULD BE REMOVED
       break;
     case 5:
       loadschedule(Seats, preload);
+      initSeatingData(Seats, preload);
+      initCustomerCart(&myCart);
       break;
     case 6:
-      //SaveAndExit(MovieData preload[], int size);
+      // SaveAndExit(MovieData preload[], int size);
       SaveAndExit(preload, Seats);
       exitflag = 0;
+      break;
+    default:
+      printf("Invalid selection!\n");
     }
   }
 }
 
 // seating data for back end, MovieData for front end
-//@ELI Update 2d array 
-void loadschedule(SeatingData s[][5], MovieData Update[]) {
+//@ELI Update 2d array
+void loadschedule(SeatingData s[][6], MovieData Update[]) {
   String50 filename;
-  int i, j;
+  int i, j, k;
+  showtime temp;
   printf("Enter Movie File with .txt\n >");
   scanf("%50s", filename);
   FILE *newfp = fopen(filename, "r");
@@ -134,29 +147,49 @@ void loadschedule(SeatingData s[][5], MovieData Update[]) {
     scanf("%50s", filename);
   }
   for (i = 0; i < 6; i++) {
-    fscanf(newfp, "%d", &s[i]->Connect.CinemaNumber);
+    fscanf(newfp, " %d", &s[i]->Connect.CinemaNumber);
     fscanf(newfp, " %50[^\n]", s[i]->Connect.MovieTitle);
     fscanf(newfp, " %1000[^\n]", s[i]->Connect.MovieDescription);
     fscanf(newfp, " %50s", s[i]->Connect.RunningTime);
 
-    Update[i].CinemaNumber = s[i]->Connect.CinemaNumber;
     strcpy(Update[i].MovieTitle, s[i]->Connect.MovieTitle);
     strcpy(Update[i].MovieDescription, s[i]->Connect.MovieDescription);
     strcpy(Update[i].RunningTime, s[i]->Connect.RunningTime);
-    for (j = 0; j < 5; j++) {
-      fscanf(newfp, " %7s", s[i]->Connect.ShowTime[j]); // Fixed indexing and buffer size
-      strcpy(Update[i].ShowTime[j], s[i]->Connect.ShowTime[j]);
+    for (j = 0; j < 6; j++) {
+      if(getc(newfp) == EOF){
+        Update[i+1].CinemaNumber = atoi(temp);
+        for(k = j; k < 6; k++){
+            strcpy(s[i]->Connect.ShowTime[k], "NULLSHO");
+            strcpy(Update[i].ShowTime[j], s[i]->Connect.ShowTime[j]);
+        }
+        j = 5;
+      }else{
+        fscanf(newfp, " %7s", temp);
+        if(strlen(temp) > 1){
+            strcpy(s[i]->Connect.ShowTime[j], temp);
+            strcpy(Update[i].ShowTime[j], s[i]->Connect.ShowTime[j]);
+        }else if(strlen(temp) == 1){
+            Update[i+1].CinemaNumber = atoi(temp);
+            for(k = j; k < 6; k++){
+                strcpy(s[i]->Connect.ShowTime[k], "NULLSHO");
+                strcpy(Update[i].ShowTime[j], s[i]->Connect.ShowTime[j]);
+            }
+            j = 5;
+        }
+      }
     }
   }
   printf("new load Succeeded!\n");
   fclose(newfp);
 }
 
-
 void preloadmovie(MovieData preload[]) {
-  FILE *fp = fopen("MovieSched.txt", "r");
+  FILE *fp = fopen("MovieSched5.txt", "r");
   String50 missingfile;
-  int i, j;
+  showtime temp = "NULL";
+
+
+  int i, j, k;
   if (fp == NULL) {
     printf("Schedule File Missing! \n Enter Movie Schedule filename\n >");
     scanf(" %50[^\n]s",
@@ -166,13 +199,32 @@ void preloadmovie(MovieData preload[]) {
                "r"); // Attempt to open the file again with the correct name
   }
   for (i = 0; i < 6; i++) {
-    fscanf(fp, "%d", &preload[i].CinemaNumber);
+    fscanf(fp, " %d", &preload[i].CinemaNumber);
+    printf(" %d\n", preload[i].CinemaNumber);
     fscanf(fp, " %50[^\n]", preload[i].MovieTitle);
     fscanf(fp, " %1000[^\n]", preload[i].MovieDescription);
     fscanf(fp, " %50s", preload[i].RunningTime);
-    for (j = 0; j < 5; j++) {
-      fscanf(fp, " %7s",
-             preload[i].ShowTime[j]); // Fixed indexing and buffer size
+    for (j = 0; j < 6; j++) {
+      if(getc(fp) == EOF){
+        for(k = j; k < 6; k++){
+            preload[i+1].CinemaNumber = atoi(temp);
+            printf("i%d %d\n", i, preload[i].CinemaNumber);
+            strcpy(preload[i].ShowTime[k], "NULLSHO");
+        }
+        j = 5;
+      }else{
+        fscanf(fp, " %7s", temp);
+        if(strlen(temp) > 1){
+            strcpy(preload[i].ShowTime[j], temp);
+        }else if(strlen(temp) == 1){
+            preload[i+1].CinemaNumber = atoi(temp);
+            printf("i%d %d\n", i, preload[i].CinemaNumber);
+            for(k = j; k < 6; k++){
+                strcpy(preload[i].ShowTime[k], "NULLSHO");
+            }
+            j = 5;
+        }
+      }
     }
   }
   printf("Preload Succeeded!\n");
@@ -186,18 +238,17 @@ void ViewSchedule(MovieData ScheduleView[]) {
     printf("Movie Title: %s\n", ScheduleView[i].MovieTitle);
     printf("Movie Description: %s\n", ScheduleView[i].MovieDescription);
     printf("Running Time: %s\n", ScheduleView[i].RunningTime);
-    for (j = 0; j < 5; j++) {
-      printf("Show Times: %s\n", ScheduleView[i].ShowTime[j]); // Fixed indexing
+    for (j = 0; j < 6; j++) {
+      if(strcmp(ScheduleView[i].ShowTime[j], "NULLSHO") != 0){
+      printf("Show Times: %s\n", ScheduleView[i].ShowTime[j]);} // Fixed indexing
     }
   }
 }
 
 void SortByTime(SeatingData s[], int size) { // ind[0] = 1
   int i, j;
-  //int k;    - unused variable
   int min;
   SeatingData temp;
-  //char tempTime[3];     unused variable
 
   for (i = 0; i < size - 1; i++) {
     min = i;
@@ -215,10 +266,7 @@ void SortByTime(SeatingData s[], int size) { // ind[0] = 1
 }
 
 void PrintSearch(SeatingData s[], int size, String10 Time) {
-  int i;  
-  //int j - unused variable
-  //int k;   - unused variable
- // char tempTime[3]; unused variable
+  int i;
 
   for (i = 0; i < size; i++) {
     printf("\t\tMovie %d: %s\n", i + 1, s[i].Connect.MovieTitle);
@@ -227,7 +275,7 @@ void PrintSearch(SeatingData s[], int size, String10 Time) {
   }
 }
 
-void SearchMovie(SeatingData s[][5], String50 MovieName) {
+void SearchMovie(SeatingData s[][6], String50 MovieName) {
 
   /// TO-DO: implement error handling of invalid string inputs
   ///          implement occupancy of each showtime
@@ -236,15 +284,20 @@ void SearchMovie(SeatingData s[][5], String50 MovieName) {
                         // possible AM hour inputs
   char tempTime[3];
   SeatingData tempSched[10];
-  //int showInd[10]; unused variable
+  // int showInd[10]; unused variable
   int sIctr = 0;
   int schedCtr = 0;
 
-  int i, j, k;
+  int i, j, k, l;
   int Choice = 0;
+  char c;
+  char cChar[2] = {'1', '2'};
+  int cInt[2] = {1, 2};
 
   printf("Search by\n [1.] Movie Title \n [2.] Time\n >");
-  scanf("%d", &Choice);
+  scanf(" %s", &c);
+
+  for(l = 0; l < 2; l++){if(c == cChar[l]){Choice = cInt[l];}}
 
   switch (Choice) {
   case 1:
@@ -254,10 +307,12 @@ void SearchMovie(SeatingData s[][5], String50 MovieName) {
     for (i = 0; i < 6; i++) { // Assuming 6 movies for consistency
       if (strcmp(MovieName, s[i][0].Connect.MovieTitle) == 0) {
         printf("Output: %s\n", s[i][0].Connect.MovieTitle);
-        for (j = 0; j < 5;
+        for (j = 0; j < 6;
              j++) { // for loop to show all show times for specified movie
           if (strlen(s[i][j].Timeslot) >= 1) {
+            if(strcmp(s[i][j].Timeslot, "NULLSHO") != 0){
             printf("Showing %d: %s\n", j + 1, s[i][j].Timeslot);
+            printf("Available Seats: %d\n\n", 50 - s[i][j].Occupancy);}
           }
         }
       }
@@ -279,7 +334,7 @@ void SearchMovie(SeatingData s[][5], String50 MovieName) {
     }
 
     for (i = 0; i < 6; i++) { // Assuming 6 movies for consistency
-      for (j = 0; j < 5; j++) {
+      for (j = 0; j < 6; j++) {
         // assign the first two digits of the selected showtime's time to look
         // for a match
         for (k = 0; k < 2; k++) {
@@ -298,6 +353,8 @@ void SearchMovie(SeatingData s[][5], String50 MovieName) {
     SortByTime(tempSched, schedCtr);
     PrintSearch(tempSched, schedCtr, Time);
     break;
+  default:
+    printf("Invalid selection!\n");
   }
 }
 
@@ -372,7 +429,7 @@ void initSeatArray(
       0; // initializes current showing occupancy to 0. should have a max of 50.
 }
 
-void initSeatingData(SeatingData Showings[][5],
+void initSeatingData(SeatingData Showings[][6],
                      MovieData Movies[]) { /// INITIALIZES ALL SHOWINGS IN THE
                                            /// SEATINGDATA 2D ARRAY
 
@@ -380,7 +437,7 @@ void initSeatingData(SeatingData Showings[][5],
   int numShowtimes = 0; // keeps track of how many showtimes were initialized
 
   for (i = 0; i < 6; i++) {   // ROWS
-    for (j = 0; j < 5; j++) { // columns
+    for (j = 0; j < 6; j++) { // columns
       Showings[i][j].currentTix = 0;
       Showings[i][j].Connect =
           Movies[i]; // each showing parent struct initialized with moviedata
@@ -394,9 +451,6 @@ void initSeatingData(SeatingData Showings[][5],
     }
   }
 
-  // TO-DO: implement a function that doesn't re-initialize the seats that are
-  // already taken
-
   /// EVERYTHING BELOW THIS LINE IS FOR TRACING PURPOSES ONLY AND SHOULD BE
   /// DELETED SOON
 
@@ -404,17 +458,18 @@ void initSeatingData(SeatingData Showings[][5],
 
   for (i = 0; i < 6; i++) { // ROWS
     printf("Time slots for %s \n", Showings[i][0].Connect.MovieTitle);
-    for (j = 0; j < 5; j++) { // columns
+    printf("CINEMA NUMBER for %d \n", Movies[i].CinemaNumber);
+    for (j = 0; j < 6; j++) { // columns
       printf("Showing %d: %s\n", j + 1, Showings[i][j].Timeslot);
     }
   }
 }
 
-void initCustomerCart(CustomerCart *myCart){
+void initCustomerCart(CustomerCart *myCart) {
   int i;
 
   myCart->ticketQuantity = 0;
-  for(i = 0; i < 4; i++){
+  for (i = 0; i < 144; i++) {
     myCart->cart[i].CinemaNumber = 0;
     strcpy(myCart->cart[i].MovieTitle, "NULL TITLE");
     strcpy(myCart->cart[i].Timeslot, "--:--");
@@ -434,41 +489,59 @@ int vSeat(char r,
   return 0;
 }
 
-void SelectCinemaSeat(MovieData Movies[], SeatingData Showings[][5], CustomerCart *Cart) {
-  int i, j;
+void SelectCinemaSeat(MovieData Movies[], SeatingData Showings[][6],
+                      CustomerCart *Cart) {
+  int i, j, k;
   int exitflag = 1;
-  int decider;
-  int movieIndex;
+  int decider = 0;
+  char input1, input2;
+  char numchar[6] = {'1', '2', '3', '4', '5', '6'};
+  int numint[6] = {1, 2, 3, 4, 5, 6};
+  int movieIndex = -1;
 
   printf("Which movie would you like to watch? \n");
   while (exitflag == 1) {
     for (i = 0; i < 6; i++) {
       printf("[%d.] %50s\n", i + 1, Movies[i].MovieTitle);
     }
-    scanf(" %d", &movieIndex);
-    movieIndex--;
+
+    scanf(" %s", &input1);
+    for(k = 0; k < 6; k++){if(input1 == numchar[k]){movieIndex = numint[k] - 1;}}
 
     // view the schedules for the selected movie
     system("cls");
     if (movieIndex >= 0 && movieIndex <= 5) {
       // display showtimes
       printf("Displaying Showtimes for %s:\n\n", Movies[movieIndex].MovieTitle);
-      for (j = 0; j < 5; j++) {
+      for (j = 0; j < 6; j++) {
+        if(strcmp(Movies[movieIndex].ShowTime[j], "NULLSHO") != 0){
         printf("Showing %d: %s\n", j + 1, Movies[movieIndex].ShowTime[j]);
+        }
       }
       printf("Select a showing: ");
-      scanf(" %d", &decider);
+      scanf(" %s", &input2);
 
-      if (decider >= 1 && decider <= 5) {
-        SeatSelect(&Showings[movieIndex][decider - 1], Cart);
-        exitflag = 0;
+      for(k = 0; k < 6; k++){if(input2 == numchar[k]){decider = numint[k];}}
 
-        /// TO-DO: implement error handling for a full cinema
-        /// TO-DO: implement error handling for 4 maximum ticket reservations
-        /// per customer
-      } else {
-        printf("Invalid selection. \n");
-        exitflag = 1;
+      switch(decider){
+          case 1:
+          case 2:
+          case 3:
+          case 4:
+          case 5:
+          case 6:
+            if(strcmp(Showings[movieIndex][decider - 1].Timeslot, "NULLSHO") == 0){
+                printf("Invalid selection! Try again.\n\n");
+                exitflag = 1;
+                break;
+            }else{
+                SeatSelect(&Showings[movieIndex][decider - 1], Cart);
+                exitflag = 0;
+                break;
+            }
+          default:
+            printf("Invalid selection! Try again.\n\n");
+            exitflag = 1;
       }
     } else {
       exitflag = 1;
@@ -492,11 +565,15 @@ void SeatSelect(SeatingData *c, CustomerCart *t) {
   int seatRow = 0;
   // int newLoop = 0; FOR TRACING PURPOSES ONLY
 
-  if(c->currentTix >= 4){
+  if (c->currentTix >= 4) {
     printf("Max ticket allowance reached!\n\n");
   }
 
-  while (validSeat != 1 && exitStatus != 1 && c->currentTix < 4) {
+  if (c->Occupancy >= 50) {
+    printf("Maximum occupancy reached!\n\n");
+  }
+
+  while (validSeat != 1 && exitStatus != 1 && c->currentTix < 4 && c->Occupancy < 50) {
     /*if(newLoop > 0){
         printf("LOOP %d\n", newLoop+1);
     }*/ ///THIS CODE IS PURELY FOR TRACING PURPOSES
@@ -541,28 +618,28 @@ void SeatSelect(SeatingData *c, CustomerCart *t) {
         t->cart[cInd].CinemaNumber = c->Connect.CinemaNumber;
         strcpy(t->cart[cInd].MovieTitle, c->Connect.MovieTitle);
         temp[0] = letterArray[rN];
-            if(num == 9){
-                temp[1] = '1';
-                temp[2] = '0';
-                temp[3] = '\0';
-            }else{
-                temp[1] = numbers[num];
-                temp[2] = '\0';
-            }
+        if (num == 9) {
+          temp[1] = '1';
+          temp[2] = '0';
+          temp[3] = '\0';
+        } else {
+          temp[1] = numbers[num];
+          temp[2] = '\0';
+        }
         strcpy(t->cart[cInd].SeatNum, temp);
         strcpy(t->cart[cInd].Timeslot, c->Timeslot);
         t->ticketQuantity++;
 
-        ///USER PROMPT
+        /// USER PROMPT
         printf("Add more tickets? Y or N\n<");
         scanf(" %c", &YorN);
-        if(YorN == 'Y'){
-            validSeat = 0;
-            exitStatus = 0;;
-        }else if(YorN == 'N'){
-            exitStatus = 1;
-        }else{
-            printf("Invalid input.\n");
+        if (YorN == 'Y') {
+          validSeat = 0;
+          exitStatus = 0;
+        } else if (YorN == 'N') {
+          exitStatus = 1;
+        } else {
+          printf("Invalid input.\n");
         }
 
       } else if (c->seatArr[rN][num] == 11) {
@@ -579,25 +656,27 @@ void SeatSelect(SeatingData *c, CustomerCart *t) {
   showSeating(c);
 }
 
-void PrintCart(CustomerCart *Cart, SeatingData s[][5]){
+void PrintCart(CustomerCart *Cart, SeatingData s[][6]) {
   int i, j, k;
   int size = Cart->ticketQuantity;
   FILE *fp;
 
   fp = fopen("ticket.txt", "w");
-  printf("Number of Tickets in Cart: %d\n", Cart->ticketQuantity);    //debug purposes
+  printf("Number of Tickets in Cart: %d\n",
+         Cart->ticketQuantity); // debug purposes
 
-  for(i = 0; i < size; i++){
-    for(j = 0; j < 6; j++){
-        for(k = 0; k < 5; k++){
-            if(strcmp(Cart->cart[i].Timeslot, s[j][k].Timeslot) == 0 &&
-               strcmp(Cart->cart[i].MovieTitle, s[j][k].Connect.MovieTitle) == 0){
-                printf("%s Showtime for %s reset!\n", s[j][k].Timeslot, s[j][k].Connect.MovieTitle);
-                s[j][k].currentTix = 0;
-            }
+  for (i = 0; i < size; i++) {
+    for (j = 0; j < 6; j++) {
+      for (k = 0; k < 6; k++) {
+        if (strcmp(Cart->cart[i].Timeslot, s[j][k].Timeslot) == 0 &&
+            strcmp(Cart->cart[i].MovieTitle, s[j][k].Connect.MovieTitle) == 0) {
+          printf("%s Showtime for %s reset!\n", s[j][k].Timeslot,
+                 s[j][k].Connect.MovieTitle);
+          s[j][k].currentTix = 0;
         }
+      }
     }
-    fprintf(fp, "TICKET %d\n", i+1);
+    fprintf(fp, "TICKET %d\n", i + 1);
     fprintf(fp, "Cinema Number: %d\n", Cart->cart[i].CinemaNumber);
     fprintf(fp, "Movie Title: %s\n", Cart->cart[i].MovieTitle);
     fprintf(fp, "Showtime: %s\n", Cart->cart[i].Timeslot);
@@ -609,55 +688,54 @@ void PrintCart(CustomerCart *Cart, SeatingData s[][5]){
   fclose(fp);
 }
 
-int takenSeats(SeatingData s, String3 taken[]){
-    int i, j;
-    int nSeat = 0;
-    char letters[5] = {'A', 'B', 'C', 'D', 'E'};
-    char numbers[9] = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
-    String3 temp;
-
-    for(i = 0; i < 5; i++){//traverse the rows
-        for(j = 0; j < 10; j++){//traverse the columns
-            if(s.seatArr[i][j] == 11){
-                temp[0] = letters[i];
-                if(j == 9){
-                    temp[1] = '1';
-                    temp[2] = '0';
-                    temp[3] = '\0';
-                }else{
-                    temp[1] = numbers[j];
-                    temp[2] = '\0';
-                }
-                strcpy(taken[nSeat], temp);
-                nSeat++;
-            }
-        }
-    }
-
-   return nSeat;
-}
-
-void resetSeats(String3 taken[], int size){
+int takenSeats(SeatingData s, String3 taken[]) {
   int i, j;
-  int length;
+  int nSeat = 0;
+  char letters[5] = {'A', 'B', 'C', 'D', 'E'};
+  char numbers[9] = {'1', '2', '3', '4', '5', '6', '7', '8', '9'};
+  String3 temp;
 
-  for(i = 0; i < size; i++){
-    length = strlen(taken[i]);
-    for(j = 0; j < length; j++){
-        taken[i][j] = '\0';
+  for (i = 0; i < 5; i++) {    // traverse the rows
+    for (j = 0; j < 10; j++) { // traverse the columns
+      if (s.seatArr[i][j] == 11) {
+        temp[0] = letters[i];
+        if (j == 9) {
+          temp[1] = '1';
+          temp[2] = '0';
+          temp[3] = '\0';
+        } else {
+          temp[1] = numbers[j];
+          temp[2] = '\0';
+        }
+        strcpy(taken[nSeat], temp);
+        nSeat++;
+      }
     }
   }
 
+  return nSeat;
 }
 
-void SaveAndExit(MovieData preload[], SeatingData s[][5]) {
+void resetSeats(String3 taken[], int size) {
+  int i, j;
+  int length;
+
+  for (i = 0; i < size; i++) {
+    length = strlen(taken[i]);
+    for (j = 0; j < length; j++) {
+      taken[i][j] = '\0';
+    }
+  }
+}
+
+void SaveAndExit(MovieData preload[], SeatingData s[][6]) {
   FILE *fp;
   String10 date;
   time_t t = time(NULL);
   struct tm *tm = localtime(&t); // struct tm declared in time.h
   int i, j, k;
 
-  ///INDEXING FOR SEAT ARRANGEMENTS
+  /// INDEXING FOR SEAT ARRANGEMENTS
   String3 seatsTaken[50];
   int seats = 0;
 
@@ -670,22 +748,24 @@ void SaveAndExit(MovieData preload[], SeatingData s[][5]) {
 
   fp = fopen(showtext, "w");
 
-  for(i = 0; i < 6; i++){
-    for(j = 0; j < 5; j++){
-        if(s[i][j].Occupancy > 0){                                          //Displays only the movies with at least 1 seat taken
-            fprintf(fp, "Cinema No: %d\n", s[i][j].Connect.CinemaNumber);
-            fprintf(fp, "Title: %s\n", s[i][j].Connect.MovieTitle);
-            fprintf(fp, "Time: %s\n", s[i][j].Timeslot);
-            fprintf(fp, "Taken Seats: \n");
-            seats = takenSeats(s[i][j], seatsTaken);                        //sets number of seats taken and initializes the seatsTaken string array
-            for(k = 0; k < seats; k++){
-                fprintf(fp, "%s ", seatsTaken[k]);
-            }
-            resetSeats(seatsTaken, seats);                                  //resets seatsTaken string array
-            seats = 0;
-            fprintf(fp, "\n\n");
+  for (i = 0; i < 6; i++) {
+    for (j = 0; j < 6; j++) {
+      if (s[i][j].Occupancy >
+          0) { // Displays only the movies with at least 1 seat taken
+        fprintf(fp, "Cinema No: %d\n", s[i][j].Connect.CinemaNumber);
+        fprintf(fp, "Title: %s\n", s[i][j].Connect.MovieTitle);
+        fprintf(fp, "Time: %s\n", s[i][j].Timeslot);
+        fprintf(fp, "Taken Seats: \n");
+        seats = takenSeats(
+            s[i][j], seatsTaken); // sets number of seats taken and initializes
+                                  // the seatsTaken string array
+        for (k = 0; k < seats; k++) {
+          fprintf(fp, "%s ", seatsTaken[k]);
+        }
+        resetSeats(seatsTaken, seats); // resets seatsTaken string array
+        seats = 0;
+        fprintf(fp, "\n\n");
       }
     }
   }
 }
-
